@@ -129,12 +129,11 @@ const UniversityAdminFormPage = () => {
                 const data = await response.json();
                 console.log(data);
 
-                if (response.ok && data.onboardingUrl) {
-                     showToast('Redirecting to Stripe setup...', 'success');
-                     // Redirect to Stripe Onboarding
-                     window.location.href = data.onboardingUrl;
+                if (response.ok) {
+                     showToast('University Admin created successfully', 'success');
+                     navigate('/admin/university-admins');
                      return; 
-                } else if (!response.ok) {
+                } else {
                     throw new Error(data.error || 'Failed to create admin');
                 }
             }

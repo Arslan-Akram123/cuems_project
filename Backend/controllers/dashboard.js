@@ -5,7 +5,7 @@ const user = require("../models/user");
 const bookEvent = require("../models/bookevent");
 const comment = require("../models/comment");
 const  payment = require("../models/payment");
-const Comment = require("../models/comment");
+const Wallet = require("../models/wallet");
 const getDashboardData = async (req, res) => {
     const userId = req.user.id;
     const role = req.user.role;
@@ -18,7 +18,7 @@ const getDashboardData = async (req, res) => {
         const comments = await comment.find().populate('user').populate('event');
        const confirmorpaidbookevents= bookEvents.filter(be=>be.status=="confirmed" || be.status=="paid");
        const payments = await payment.find().populate('user').populate('event');
-       const amount = payments.reduce((sum, p) => sum + p.amount, 0);
+       const amount = parseFloat(payments.reduce((sum, p) => sum + (p.amount || 0), 0).toFixed(2));
        const totalUniversityAdmins = await user.countDocuments({ role: 'subAdmin' });
        const payload={totalUsers:users.length,totalCategories:categories.length,totalUniversities:universities.length,totalEvents:events.length,totalBookEvents:confirmorpaidbookevents.length,totalComments:comments.length,
         totalPayments:amount,
@@ -31,6 +31,7 @@ const getDashboardData = async (req, res) => {
         const userComments = comments.filter(comment => comment.event.user._id.toString() === userId);
         const userPayments = payments.filter(payment => payment.event.user._id.toString() === userId);
         const userEvents = events.filter(event => event.user._id.toString() === userId);
+        const userWallet = await Wallet.findOne({ user: userId });
         const userPayload = {
             totalUsers: 1, // Since it's for the current user
             totalCategories: categories.length,
@@ -38,8 +39,9 @@ const getDashboardData = async (req, res) => {
             totalEvents: userEvents.length,
             totalBookEvents: userBookEvents.length,
             totalComments: userComments.length,
-            totalPayments: userPayments.reduce((sum, p) => sum + p.amount, 0),
-            totalUniversityAdmins: totalUniversityAdmins
+            totalPayments: parseFloat(userPayments.reduce((sum, p) => sum + (p.amount || 0), 0).toFixed(2)),
+            totalUniversityAdmins: totalUniversityAdmins,
+            totalWalletAmount: userWallet ? parseFloat((userWallet.balance || 0).toFixed(2)) : 0
         };
         res.status(200).json(userPayload);
        }

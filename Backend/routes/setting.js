@@ -1,6 +1,6 @@
 const express = require('express');
 // const multer = require('multer');
-const { addProfileData,getProfileData,ChangePassword,updateProfileStatus,getAllUsers,getAllSubAdminsWithWallet,getProfilewithID,updateProfileWithID,deleteProfileWithID } = require('../controllers/setting');
+const { addProfileData,getProfileData,ChangePassword,updateProfileStatus,getAllUsers,getAllSubAdminsWithWallet,getProfilewithID,updateProfileWithID,deleteProfileWithID,getSubadminwithWallet,createSubadminWallet } = require('../controllers/setting');
 // const { handleMulterError } = require('../middlewares/multer');
 const Router = express.Router();
 
@@ -39,5 +39,8 @@ Router.get('/getAllSubAdminsWithWallet',getAllSubAdminsWithWallet);
 Router.get('/getProfilewithID/:userId', getProfilewithID);
 Router.put('/updateProfileWithID/:userId', updateProfileWithID);
 Router.delete('/deleteProfileWithID/:userId',deleteProfileWithID);
+
+Router.get('/getSubadminwithWallet', getSubadminwithWallet);
+Router.post('/createSubadminWallet', createSubadminWallet);
 
 module.exports = Router;

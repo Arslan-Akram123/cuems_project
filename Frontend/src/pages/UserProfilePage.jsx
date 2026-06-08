@@ -217,7 +217,7 @@ const UserProfilePage = () => {
                                             {previewImage ? (
                                                 <img src={previewImage} alt="Preview" className="h-full w-full object-cover rounded-md" />
                                             ) : (
-                                                <img src={formData.profileImage ? formData.profileImage : '/uploads/image.png'} alt="Default" className="h-full w-full object-cover rounded-md" />
+                                                <img src={formData.profileImage ? formData.profileImage : '/image.png'} alt="Default" className="h-full w-full object-cover rounded-md" />
                                             )}
                                         </div>
                                         {/* <input type="file" accept="image/*" id="profileImage" name="profileImage"

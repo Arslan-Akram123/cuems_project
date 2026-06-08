@@ -81,7 +81,7 @@ async function registerUser(req, res) {
 
         const user = await autuser.create({ fullName, email, password });
 
-        sendEmail(user.email, "Verification Email", "Please Activate Your Account", `<a href="${process.env.CLIENT_URL}/auth/activate/${user._id}">Click here</a> to activate your account`);
+        sendEmail(user.email, "Verification Email", "Please Activate Your Account", `<a href="${process.env.SERVER_URL}/auth/activate/${user._id}">Click here</a> to activate your account`);
 
 
 
@@ -171,7 +171,7 @@ async function resetPassword(req, res) {
             return res.status(404).json({ error: 'User not found' });
         }
         newPassword = generatePassword();
-        sendEmail(user.email, "Password Reset Request", `Your new password is: ${newPassword}`, `<a href="${process.env.CLIENT_URL}/auth/confirm-reset-password/${user._id}">Click here</a> <span>to reset your password</span> <br>
+        sendEmail(user.email, "Password Reset Request", `Your new password is: ${newPassword}`, `<a href="${process.env.SERVER_URL}/auth/confirm-reset-password/${user._id}">Click here</a> <span>to reset your password</span> <br>
             <p>Note: Your new password is: ${newPassword}</p>
             `);
         return res.status(200).json({ message: 'Password reset link sent to your email' });
@@ -229,35 +229,6 @@ async function universityAdminRegistrationAndWalletAssignment(req, res) {
         });
         await user.save();
 
-        const account = await stripe.accounts.create({
-            type: 'express', 
-            country: 'US', 
-            email: email,
-            capabilities: {
-              card_payments: {requested: true},
-              transfers: {requested: true},
-            },
-        });
-       console.log('Stripe account created:', account.id);
-        // Create Wallet linked to Stripe Account
-        const wallet = await Wallet.create({ 
-            user: user._id, 
-            stripeAccountId: account.id,
-            status: 'pending' // Initial status
-        });
-        console.log('Wallet created with ID:', wallet._id);
-        user.wallet = wallet._id;
-        await user.save();
-
-        // Create Account Link for Onboarding
-        const accountLink = await stripe.accountLinks.create({
-            account: account.id,
-            refresh_url: 'http://localhost:5173/admin/university-admins?status=refresh',
-            return_url: 'http://localhost:5173/admin/university-admins?status=success',
-            type: 'account_onboarding',
-        });
-        console.log('Account link created:', accountLink.url);
-
         // Send Email with credentials to the newly created University Admin
         sendEmail(
             email,
@@ -270,11 +241,10 @@ async function universityAdminRegistrationAndWalletAssignment(req, res) {
              <p>Please log in and update your password as soon as possible for security.</p>`
         );
 
-        // Respond with user and onboarding link
+        // Respond with user
         return res.status(201).json({ 
             message: 'University Admin created successfully', 
-            user, 
-            onboardingUrl: accountLink.url 
+            user
         });
 
     } catch (err) {

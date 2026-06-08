@@ -17,12 +17,16 @@ const AdminProfilePage = () => {
     confirmPassword: ''
   });
   // const [securityFieldErrors, setSecurityFieldErrors] = useState({});
-  const { formData, setFormData } = useProfile();
+  const { formData, setFormData, fetchProfileData } = useProfile();
   const [showPassword, setShowPassword] = useState({
     current: false,
     new: false,
     confirm: false,
   });
+
+  useEffect(() => {
+    fetchProfileData();
+  }, []);
 
   const togglePasswordVisibility = (field) => {
     setShowPassword(prev => ({ ...prev, [field]: !prev[field] }));
@@ -106,8 +110,9 @@ const AdminProfilePage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    let imageUrl = null;
-    if (formData.profileImage) {
+    let imageUrl = typeof formData.profileImage === 'string' ? formData.profileImage : null;
+
+    if (formData.profileImage instanceof File) {
       const data = new FormData();
       data.append('image', formData.profileImage);
       try {
@@ -129,26 +134,24 @@ const AdminProfilePage = () => {
         return;
       }
     }
-    const data = {};
-    Object.entries(formData).forEach(([key, value]) => {
-      if (key === 'profileImage') {
-        if (imageUrl) {
-          data[key] = imageUrl;
-        }
-      } else {
-        data[key] = value;
-      }
-    });
+
+    const dataToSend = {
+      ...formData,
+      profileImage: imageUrl
+    };
+
     try {
       const response = await fetch('http://localhost:8001/settings/addProfileData', {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
+        body: JSON.stringify(dataToSend)
       });
       const result = await response.json();
       if (response.ok) {
-        showToast(result.message || 'Profile updated successfully!', 'success');
+        showToast('Profile updated successfully!', 'success');
+        fetchProfileData();
+        setPreviewImage(null);
       } else {
         showToast(result.error || 'Update failed.', 'error');
       }
@@ -276,7 +279,7 @@ const AdminProfilePage = () => {
                   {previewImage ? (
                     <img src={previewImage} alt="Preview" className="h-full w-full object-cover rounded-md" />
                   ) : (
-                    <img src={formData.profileImage ? formData.profileImage : '/uploads/image.png'} alt="Default" className="h-full w-full object-cover rounded-md" />
+                    <img src={(formData.profileImage && typeof formData.profileImage === 'string') ? formData.profileImage : '/image.png'} alt="Default" className="h-full w-full object-cover rounded-md" />
                   )}
                 </div>
                 <input

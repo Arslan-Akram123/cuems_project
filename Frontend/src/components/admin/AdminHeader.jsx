@@ -159,7 +159,7 @@ const AdminHeader = ({ onMenuButtonClick }) => {
                                       <img src={URL.createObjectURL(formData.profileImage)} alt="Profile" className="h-12 w-12 object-cover" />
                                     )
                                   ) : (
-                                    <FiUser className="h-7 w-7 text-gray-600" />
+                                   <img src="/image.png" alt="Profile" className="h-12 w-12 object-cover" />
                                   )}
                                 </span>
                                 <span className="absolute bottom-0 right-0 block h-2 w-2 rounded-full bg-green-500 ring-2 ring-white"></span>

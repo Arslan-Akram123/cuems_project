@@ -59,13 +59,14 @@ const DashboardPage = () => {
         { icon: <FiMessageCircle size={32}/>, title: 'Total Comments', value: dashboardData.totalComments || 0, color: 'teal' },
         { icon: <FiGrid size={32}/>, title: 'Total Categories', value: dashboardData.totalCategories || 0, color: 'indigo' },
         { icon: <FiAward  size={32}/>, title: 'Total Universities', value: dashboardData.totalUniversities || 0, color: 'purple' },
-        { icon: <FiDollarSign size={32}/>, title: 'Total Payments', value: dashboardData.totalPayments || 0, color: 'gray' },
-        { icon: <FiUserCheck size={32}/>, title: 'Total University Admins', value: dashboardData.totalUniversityAdmins || 0, color: 'green' }
+        { icon: <FiDollarSign size={32}/>, title: 'Total Payments', value: `$${(dashboardData.totalPayments || 0).toFixed(2)}`, color: 'gray' },
+        { icon: <FiUserCheck size={32}/>, title: 'Total University Admins', value: dashboardData.totalUniversityAdmins || 0, color: 'green' },
+        { icon: <FiDollarSign size={32}/>, title: 'Wallet Balance', value: `$${(dashboardData.totalWalletAmount || 0).toFixed(2)}`, color: 'green' }
     ];
     const superAdminStats =['Total Users', 'Total Universities', 'Total University Admins', ];
     const stats=Allstats.filter(stat => {
         if(role === 'Admin'){
-            return true;
+            return superAdminStats.includes(stat.title) || ['Total Events', 'Total Bookings', 'Total Comments', 'Total Categories', 'Total Payments'].includes(stat.title);
         }
         return superAdminStats.includes(stat.title) === false;
     });

@@ -106,7 +106,10 @@ const ShowBookingPage = () => {
                         <InfoField label="Booking No" value={bookingId} />
                         {/* <InfoField label="Total Subscribers" value={booking.subscribers} /> */}
                         <InfoField label="Status" value={booking?.status} />
-                        <div className="md:col-span-3">
+                        <InfoField label="CNIC Number" value={booking?.cnicNumber} />
+                        <InfoField label="Previous Degree" value={booking?.previousDegreeName} />
+                        <InfoField label="Current Institute" value={booking?.currentInstituteName} />
+                        <div className="md:col-span-2">
                             <InfoField label="Notes" value={booking?.bookingNotes} />
                         </div>
                     </div>

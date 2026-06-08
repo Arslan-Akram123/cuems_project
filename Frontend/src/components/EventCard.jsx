@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 
 const EventCard = ({ event }) => {
   
-  const { _id, name, price, category, startDate, startTime, image,status } = event;
+  const { _id, name, price, category, startDate, startTime, image,status,location } = event;
  
   let formattedStartDate = 'N/A';
   if (startDate) {
@@ -33,6 +33,7 @@ const EventCard = ({ event }) => {
         <div className="mt-2 space-y-1 text-sm text-gray-600 flex-grow">
           <p><span className="font-semibold">Price:</span>${price}</p>
           <p><span className="font-semibold">Category:</span> {category}</p>
+          <p><span className="font-semibold">Location:</span> {location}</p>
           <p><span className="font-semibold">Start Date:</span> {formattedStartDate}</p>
           <p><span className="font-semibold">Start Time:</span> {startTime}</p>
           {/* <p><span className="font-semibold me-2">Status:</span> {status}</p> */}

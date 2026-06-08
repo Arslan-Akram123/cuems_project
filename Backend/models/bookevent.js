@@ -19,6 +19,18 @@ const bookingEventSchema = new Schema({
         type: String,
         required: true
     },
+    cnicNumber: {
+        type: String,
+        required: true
+    },
+    previousDegreeName: {
+        type: String,
+        required: true
+    },
+    currentInstituteName: {
+        type: String,
+        required: false
+    },
     adminRead: {
         type: Boolean,
         default: false

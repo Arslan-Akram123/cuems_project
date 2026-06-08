@@ -1,11 +1,25 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { FiChevronLeft, FiUpload, FiPlus } from 'react-icons/fi';
+import { FiChevronLeft, FiUpload, FiPlus, FiAlertTriangle } from 'react-icons/fi';
 import { useLoader } from '../../context/LoaderContext';
 import { FaSpinner } from 'react-icons/fa';
 import { useToast } from '../../context/ToastContext';
+import { jwtDecode } from 'jwt-decode';
+
+const getAuth = () => {
+    const localtoken = localStorage.getItem('token');
+    if (!localtoken) return { role: null };
+    try {
+        const decoded = jwtDecode(localtoken);
+        return { role: decoded.role };
+    } catch {
+        return { role: null };
+    }
+};
+
 const CreateEventPage = () => {
     const navigate = useNavigate();
+    const { role } = getAuth();
     const [formData, setFormData] = useState({
         name: '',
         location: '',
@@ -23,8 +37,26 @@ const CreateEventPage = () => {
     const [imageFile, setImageFile] = useState(null);
     const [imagePreview, setImagePreview] = useState(null);
     const [mockCategories, setmockCategories] = useState([]);
+    const [walletStatus, setWalletStatus] = useState(null);
 
     useEffect(() => {
+        const fetchWalletStatus = async () => {
+            try {
+                const response = await fetch('http://localhost:8001/settings/getSubadminwithWallet', {
+                    credentials: 'include',
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    setWalletStatus(data.wallet ? data.wallet.status : 'missing');
+                } else {
+                    setWalletStatus('missing');
+                }
+            } catch (err) {
+                console.error('Error fetching wallet status:', err);
+                setWalletStatus('error');
+            }
+        };
+        fetchWalletStatus();
         fetch('http://localhost:8001/category/getCategories', {
             credentials: 'include',
         })
@@ -162,7 +194,28 @@ const CreateEventPage = () => {
                 </Link>
             </div>
             <form onSubmit={handleSubmit} className="bg-white p-8 rounded-lg shadow-md space-y-8">
-                <div className="grid md:grid-cols-3 gap-8">
+                {role === 'subAdmin' && walletStatus !== 'active' && walletStatus !== null && (
+                    <div className="bg-red-50 border-l-4 border-red-500 p-6 rounded-lg mb-8">
+                        <div className="flex items-center gap-4">
+                            <FiAlertTriangle className="text-red-500 text-3xl flex-shrink-0" />
+                            <div>
+                                <h3 className="text-lg font-bold text-red-800">Wallet Action Required</h3>
+                                <p className="text-red-700">
+                                    {walletStatus === 'missing' 
+                                        ? "You haven't created a wallet yet. You must have an active wallet to create and sell event tickets." 
+                                        : "Your wallet is currently pending or restricted. Please complete your Stripe onboarding to activate it."}
+                                </p>
+                                <Link 
+                                    to="/admin/wallet" 
+                                    className="inline-block mt-3 bg-red-600 text-white font-semibold py-2 px-4 rounded hover:bg-red-700 transition"
+                                >
+                                    Go to Wallet Settings
+                                </Link>
+                            </div>
+                        </div>
+                    </div>
+                )}
+                <div className={`grid md:grid-cols-3 gap-8 ${role === 'subAdmin' && walletStatus !== 'active' && walletStatus !== null ? 'opacity-50 pointer-events-none' : ''}`}>
                     <div className="md:col-span-2 space-y-6">
                         <InputField label="Name" name="name" value={formData.name} onChange={handleChange} />
                         <InputField label="Location" name="location" value={formData.location} onChange={handleChange} />
@@ -187,51 +240,57 @@ const CreateEventPage = () => {
                     </div>
                 </div>
 
-                <div className="bg-gray-50 p-6 rounded-lg border border-gray-200">
-                    <h3 className="text-lg font-semibold mb-4">Date and Time</h3>
-                    <div className="grid md:grid-cols-2 gap-6">
-                        <InputField label="Start Date" name="startDate" type="date" value={formData.startDate} onChange={handleChange} />
-                        <InputField label="End Date" name="endDate" type="date" value={formData.endDate} onChange={handleChange} />
-                        <InputField label="Start Time" name="startTime" type="time" value={formData.startTime} onChange={handleChange} />
-                        <InputField label="End Time" name="endTime" type="time" value={formData.endTime} onChange={handleChange} />
+                <div className={`space-y-8 ${role === 'subAdmin' && walletStatus !== 'active' && walletStatus !== null ? 'opacity-50 pointer-events-none' : ''}`}>
+                    <div className="bg-gray-50 p-6 rounded-lg border border-gray-200">
+                        <h3 className="text-lg font-semibold mb-4">Date and Time</h3>
+                        <div className="grid md:grid-cols-2 gap-6">
+                            <InputField label="Start Date" name="startDate" type="date" value={formData.startDate} onChange={handleChange} />
+                            <InputField label="End Date" name="endDate" type="date" value={formData.endDate} onChange={handleChange} />
+                            <InputField label="Start Time" name="startTime" type="time" value={formData.startTime} onChange={handleChange} />
+                            <InputField label="End Time" name="endTime" type="time" value={formData.endTime} onChange={handleChange} />
+                        </div>
                     </div>
-                </div>
 
-                <div>
-                    <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">Category</label>
-                    <select
-                        id="category"
-                        name="category"
-                        value={formData.category}
-                        required
-                        onChange={handleChange}
-                        className="w-full border-teal-500 py-2 px-2 rounded-md shadow-sm border-1 focus:outline-teal-500 focus:border-teal-500 focus:ring-teal-500"
-                    >
-                        <option value="">Select Category</option>
-                        {mockCategories.map(cat => (
-                            <option key={cat._id} value={cat.name}>{cat.name}</option>
-                        ))}
-                    </select>
-                </div>
+                    <div>
+                        <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                        <select
+                            id="category"
+                            name="category"
+                            value={formData.category}
+                            required
+                            onChange={handleChange}
+                            className="w-full border-teal-500 py-2 px-2 rounded-md shadow-sm border-1 focus:outline-teal-500 focus:border-teal-500 focus:ring-teal-500"
+                        >
+                            <option value="">Select Category</option>
+                            {mockCategories.map(cat => (
+                                <option key={cat._id} value={cat.name}>{cat.name}</option>
+                            ))}
+                        </select>
+                    </div>
 
-                <div>
-                    <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                    <textarea
-                        id="description"
-                        name="description"
-                        rows={4}
-                        value={formData.description}
-                        required
-                        onChange={handleChange}
-                        className="w-full border-1 py-2 px-2 border-teal-500 rounded-md shadow-sm focus:border-teal-500 focus:outline-teal-500 focus:ring-teal-500"
-                        placeholder="Write a brief description..."
-                    ></textarea>
-                </div>
+                    <div>
+                        <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                        <textarea
+                            id="description"
+                            name="description"
+                            rows={4}
+                            value={formData.description}
+                            required
+                            onChange={handleChange}
+                            className="w-full border-1 py-2 px-2 border-teal-500 rounded-md shadow-sm focus:border-teal-500 focus:outline-teal-500 focus:ring-teal-500"
+                            placeholder="Write a brief description..."
+                        ></textarea>
+                    </div>
 
-                <div className="text-right">
-                    <button type="submit" className="bg-teal-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-teal-700 transition-colors">
-                       {isLoading ?(<span className='flex items-center justify-center gap-3'><FaSpinner className="animate-spin h-5 w-5" />Saving... </span>):(<span> Save Event</span>)}
-                    </button>
+                    <div className="text-right">
+                        <button 
+                            type="submit" 
+                            disabled={role === 'subAdmin' && walletStatus !== 'active'}
+                            className={`bg-teal-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-teal-700 transition-colors ${role === 'subAdmin' && walletStatus !== 'active' ? 'cursor-not-allowed opacity-50' : ''}`}
+                        >
+                           {isLoading ?(<span className='flex items-center justify-center gap-3'><FaSpinner className="animate-spin h-5 w-5" />Saving... </span>):(<span> Save Event</span>)}
+                        </button>
+                    </div>
                 </div>
             </form>
         </div>

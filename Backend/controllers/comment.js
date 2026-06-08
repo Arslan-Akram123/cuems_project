@@ -9,6 +9,9 @@ const getAllComments = async (req, res) => {
         if(role==="Admin"){  
             return res.status(200).json({});
         }
+        if(role==="User"){
+            return res.status(200).json(comments);
+        }
         const userComments = comments.filter(comment => comment.event.user._id.toString() === userId);
         console.log("user comments", userComments);
         res.status(200).json(userComments);

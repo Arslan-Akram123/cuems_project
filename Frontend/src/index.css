@@ -51,3 +51,11 @@
   width: 0;
   animation: typing 3s steps(30, end) forwards, blink 0.8s step-end infinite;
 }
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}

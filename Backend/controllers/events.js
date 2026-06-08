@@ -1,5 +1,6 @@
 
 const eventSchema = require('../models/events');
+const Wallet = require('../models/wallet');
 function validateBusinessData(req, res) {
     const {
         name,
@@ -169,7 +170,17 @@ function validateBusinessData(req, res) {
 }
 const createEvent = async (req, res) => {
     const userId = req.user.id; 
+    const role = req.user.role;
     try {
+        if(role === 'subAdmin') {
+            const wallet = await Wallet.findOne({ user: userId });
+            if (!wallet || wallet.status !== 'active') {
+                return res.status(403).json({ 
+                    success: false, 
+                    error: 'You must have an active wallet to create events. Please complete your wallet setup in the Wallet section.' 
+                });
+            }
+        }
         const {
             name,
             location,

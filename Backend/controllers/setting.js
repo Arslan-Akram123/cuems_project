@@ -244,18 +244,45 @@ async function ChangePassword(req, res) {
 }
 
 async function getAllSubAdminsWithWallet(req, res) {
-    console.log('Get all users request received');
+    console.log('Get all subadmins with wallet request received');
     try {
-        const walletswithSubAdmins = await walletSchema.find()
-        .select('stripeAccountId status balance user') 
-        .populate({
-            path: 'user',
-            select: '_id fullName email' 
+        // Find all subadmins
+        const subadmins = await userModel.find({ role: 'subAdmin' })
+            .select('_id fullName email createdAt');
+            
+        // Find all wallets
+        const wallets = await walletSchema.find()
+            .select('stripeAccountId status balance user');
+            
+        // Map subadmins to include wallet info
+        const result = subadmins.map(admin => {
+            const wallet = wallets.find(w => w.user && w.user.toString() === admin._id.toString());
+            
+            if (wallet) {
+                // If wallet exists, return it with populated user
+                return {
+                    _id: wallet._id,
+                    stripeAccountId: wallet.stripeAccountId,
+                    status: wallet.status,
+                    balance: wallet.balance,
+                    user: admin
+                };
+            } else {
+                // If no wallet exists, return a structure that matches the frontend's expectations
+                return {
+                    _id: admin._id, // Use admin ID as wallet ID for consistency
+                    stripeAccountId: 'Not Started',
+                    status: 'no wallet',
+                    balance: 0,
+                    user: admin
+                };
+            }
         });
-        console.log('Wallets with Sub Admins:', walletswithSubAdmins);
-        res.status(200).json(walletswithSubAdmins);
+
+        console.log('Subadmins with/without wallets:', result.length);
+        res.status(200).json(result);
     } catch (err) {
-        console.error('Error fetching users:', err);
+        console.error('Error fetching subadmins with wallets:', err);
         res.status(500).json({ error: 'Internal server error' });
     }
 }
@@ -336,6 +363,80 @@ async function deleteProfileWithID(req, res) {
         res.status(500).json({ error: 'Internal server error' });
     }
 }
+async function getSubadminwithWallet(req, res) {
+    const userId = req.user.id;
+    try {
+        const wallet = await walletSchema.findOne({ user: userId });
+        if (!wallet) {
+            return res.status(200).json({ wallet: null });
+        }
+        res.status(200).json({ wallet });
+    } catch (err) {
+        console.error('Error fetching subadmin wallet:', err);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+}
+
+async function createSubadminWallet(req, res) {
+    const userId = req.user.id;
+    const userRole = req.user.role;
+
+    if (userRole !== 'subAdmin') {
+        return res.status(403).json({ error: 'Only subadmins can create a wallet' });
+    }
+
+    try {
+        const existingWallet = await walletSchema.findOne({ user: userId });
+        if (existingWallet) {
+            return res.status(400).json({ error: 'Wallet already exists' });
+        }
+
+        const user = await userModel.findById(userId);
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        // Create Stripe Connect Account
+        const account = await stripe.accounts.create({
+            type: 'express',
+            country: 'US', // Defaulting to US or could use user's country if mapped
+            email: user.email,
+            capabilities: {
+                card_payments: { requested: true },
+                transfers: { requested: true },
+            },
+        });
+
+        // Create Wallet
+        const wallet = await walletSchema.create({
+            user: userId,
+            stripeAccountId: account.id,
+            status: 'pending',
+            balance: 0
+        });
+
+        // Create Onboarding Link
+        // We ensure this redirects back to the FRONTEND (port 5173)
+        const frontendUrl = process.env.CLIENT_URL || 'http://localhost:5173';
+        
+        const accountLink = await stripe.accountLinks.create({
+            account: account.id,
+            refresh_url: `${frontendUrl}/admin/wallet?status=refresh`,
+            return_url: `${frontendUrl}/admin/wallet?status=success`,
+            type: 'account_onboarding',
+        });
+
+        res.status(201).json({
+            message: 'Wallet created successfully',
+            wallet,
+            onboardingUrl: accountLink.url
+        });
+    } catch (err) {
+        console.error('Error creating subadmin wallet:', err);
+        res.status(500).json({ error: 'Internal server error: ' + err.message });
+    }
+}
+
 module.exports={
     addProfileData,
     getProfileData,
@@ -345,5 +446,7 @@ module.exports={
     getAllUsers,
     getAllSubAdminsWithWallet,
     updateProfileWithID,
-    deleteProfileWithID
+    deleteProfileWithID,
+    getSubadminwithWallet,
+    createSubadminWallet
 }

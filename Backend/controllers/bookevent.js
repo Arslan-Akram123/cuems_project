@@ -5,18 +5,25 @@ const sendEmail = require('../services/sendEmail');
 const walletSchema = require('../models/wallet');
 const bookEvent = async (req, res) => {
     // console.log(req.body);
-    const { notes, eventId } = req.body;
+    const { notes, eventId, cnicNumber, previousDegreeName, currentInstituteName } = req.body;
    
     // notes validation
     if (notes && notes.trim() !== '') {
         const trimmedNotes = notes.trim();
         if (trimmedNotes.length < 3 || trimmedNotes.length > 100) {
-            return res.status(400).json({ error: 'Notes must be between 3 and 50 characters' });
+            return res.status(400).json({ error: 'Notes must be between 3 and 100 characters' });
         } else if (!/^[a-zA-Z0-9\s.,!?'"-]+$/.test(trimmedNotes)) {
             return res.status(400).json({ error: 'Notes can only contain letters, numbers, spaces, and basic punctuation (.,!?\'-)' });
         }
     }else{
         return res.status(400).json({ error: 'Notes are required' });
+    }
+
+    if (!cnicNumber || cnicNumber.trim() === '') {
+        return res.status(400).json({ error: 'CNIC Number is required' });
+    }
+    if (!previousDegreeName || previousDegreeName.trim() === '') {
+        return res.status(400).json({ error: 'Previous Degree Name is required' });
     }
 
     const userId = req.user.id;
@@ -26,7 +33,14 @@ const bookEvent = async (req, res) => {
     }
     const findusers = await bookingEventSchema.findOne({ user: userId, event: eventId });
     if (!findusers) {
-        const newBooking = new bookingEventSchema({ user: userId, event: eventId, bookingNotes: notes.trim() });
+        const newBooking = new bookingEventSchema({ 
+            user: userId, 
+            event: eventId, 
+            bookingNotes: notes.trim(),
+            cnicNumber: cnicNumber.trim(),
+            previousDegreeName: previousDegreeName.trim(),
+            currentInstituteName: currentInstituteName ? currentInstituteName.trim() : ''
+        });
         try {
             const savedBooking = await newBooking.save();
             res.status(201).json(savedBooking);
@@ -116,7 +130,7 @@ async function UpdateConfirmBooking(req, res) {
             const organizerId = event.user;
             const wallet = await walletSchema.findOne({ user: organizerId });
             if (wallet) {
-                wallet.balance += event.price;
+                wallet.balance = parseFloat((wallet.balance + (event.price || 0)).toFixed(2));
                 await wallet.save();
             }
 
@@ -222,7 +236,11 @@ async function completeBooking(req, res) {
         const organizerId = event.user;
         const wallet = await walletSchema.findOne({ user: organizerId });
         if (wallet) {
-            wallet.balance += event.price;
+            // cut 1% platform fee
+            const fee = parseFloat((event.price * 0.01).toFixed(2));
+            const payoutAmount = parseFloat((event.price - fee).toFixed(2));
+            wallet.balance = parseFloat((wallet.balance + payoutAmount).toFixed(2));
+            console.log(`Adding payout of ${payoutAmount} to organizer ${organizerId}'s wallet (Event price: ${event.price}, Fee: ${fee})`);
             await wallet.save();
             console.log(`Updated wallet for organizer ${organizerId}. New balance: ${wallet.balance}`);
         } else {

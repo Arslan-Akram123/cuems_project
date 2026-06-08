@@ -50,6 +50,7 @@ import EditCategoryPage from './pages/admin/EditCategoryPage';
 import EditUniversityPage from './pages/admin/EditUniversityPage';
 import ShowBookingPage from './pages/admin/ShowBookingPage';
 import AdminPaymentsPage from './pages/admin/AdminPaymentsPage';
+import AdminWalletPage from './pages/admin/AdminWalletPage';
 import ViewUniversityAdminsPage from './pages/admin/ViewUniversityAdminsPage'; 
 import UniversityAdminFormPage from './pages/admin/UniversityAdminFormPage';
 // --- Layout & Component Imports ---
@@ -157,6 +158,7 @@ console.log(siteSetting);
             <Route path="bookings/confirmed" element={<SubAdminOnlyRoute><ConfirmBookingsPage /></SubAdminOnlyRoute>} />
             <Route path="bookings/show/:bookingId" element={<SubAdminOnlyRoute><ShowBookingPage /></SubAdminOnlyRoute>} />
             <Route path="payments" element={<SubAdminOnlyRoute><AdminPaymentsPage /></SubAdminOnlyRoute>} />
+            <Route path="wallet" element={<SubAdminOnlyRoute><AdminWalletPage /></SubAdminOnlyRoute>} />
             <Route path="categories" element={<SubAdminOnlyRoute><AdminCategoriesPage /></SubAdminOnlyRoute>} />
             <Route path="categories/create" element={<SubAdminOnlyRoute><CreateCategoryPage /></SubAdminOnlyRoute>} />
             <Route path="categories/edit/:categoryId" element={<SubAdminOnlyRoute><EditCategoryPage /></SubAdminOnlyRoute>} />

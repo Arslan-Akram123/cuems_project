@@ -137,7 +137,7 @@ const CheckoutForm = ({ booking, onSuccessfulPayment }) => {
           className={`w-full flex items-center justify-center gap-3 bg-teal-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-teal-700 ${(!stripe || processing) ? 'opacity-50 cursor-not-allowed' : ''}`}
         >
           <FiLock />
-          {processing ? (<span className='flex items-center justify-center gap-3'><FaSpinner className="animate-spin h-5 w-5" /> Processing... </span>) : `Pay $${booking.event.price}`}
+          {processing ? (<span className='flex items-center justify-center gap-3'><FaSpinner className="animate-spin h-5 w-5" /> Processing... </span>) : `Pay $${(booking.event.price || 0).toFixed(2)}`}
         </button>
       </div>
     </form>

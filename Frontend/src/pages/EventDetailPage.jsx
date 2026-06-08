@@ -63,8 +63,23 @@ const EventDetailPage = () => {
 
 
   const handleBookingSubmit = async (bookingData) => {
-    const { notes,setNotes } = bookingData;
-    const payload = { notes, eventId };
+    const { 
+      notes, 
+      setNotes, 
+      cnicNumber, 
+      setCnicNumber, 
+      previousDegreeName, 
+      setPreviousDegreeName, 
+      currentInstituteName, 
+      setCurrentInstituteName 
+    } = bookingData;
+    const payload = { 
+      notes, 
+      eventId, 
+      cnicNumber, 
+      previousDegreeName, 
+      currentInstituteName 
+    };
     showLoader();
     fetch('http://localhost:8001/eventsbook/bookingEventrequest', {
       method: 'POST',
@@ -80,6 +95,9 @@ const EventDetailPage = () => {
         
           showToast('Booking successfully. Please wait for admin approval!', 'success');
           setNotes('');
+          setCnicNumber('');
+          setPreviousDegreeName('');
+          setCurrentInstituteName('');
           setTimeout(() => {
           
             setIsBookingModalOpen(false);

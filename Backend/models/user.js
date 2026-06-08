@@ -26,7 +26,7 @@ const userSchema = new Schema({
   },
   profileImageURL: {
     type: String,
-    default: 'image.png', 
+    default: '',
   },
   phoneNumber: {
     type: String,

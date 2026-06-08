@@ -80,7 +80,7 @@ const PublicHeader = () => {
 
     return (
         <header className={`fixed top-0 left-0 w-full z-30 transition-all duration-300 ${isScrolled ? 'bg-white shadow-md' : 'bg-transparent'}`}>
-            <div className="container mx-auto flex justify-between items-center px-4 py-2">
+            <div className="container mx-auto flex justify-between items-center px-4 py-0">
                 <img src={siteSetting.siteLogo} alt="Site Logo" className="h-12 md:h-16 w-auto object-contain rounded-lg" />
                <div className='flex gap-2 items-center justify-center'>
                  <Link to="/login" className={`font-semibold py-2 px-5 rounded-lg text-sm transition-all duration-300 ${isScrolled ? 'bg-teal-500 text-white hover:bg-teal-600' : 'bg-white text-teal-600 hover:bg-gray-100 shadow-lg'}`}>

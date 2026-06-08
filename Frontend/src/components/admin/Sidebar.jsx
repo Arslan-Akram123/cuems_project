@@ -1,6 +1,6 @@
 // src/components/admin/Sidebar.jsx
 import { Link, useLocation } from 'react-router-dom';
-import { FiHome, FiCalendar, FiMessageSquare, FiUser, FiCheckSquare, FiGrid, FiUsers, FiAward , FiSettings, FiPlusCircle, FiX,FiDollarSign, FiUserCheck } from 'react-icons/fi';
+import { FiHome, FiCalendar, FiMessageSquare, FiUser, FiCheckSquare, FiGrid, FiUsers, FiAward , FiSettings, FiPlusCircle, FiX,FiDollarSign, FiUserCheck, FiCreditCard } from 'react-icons/fi';
 
 import { useProfile } from '../../context/ProfileContext/ProfileContext';
 import { jwtDecode } from 'jwt-decode';
@@ -26,6 +26,7 @@ const Sidebar = ({ isSidebarOpen, onSidebarClose }) => {
         { icon: <FiUser />, text: 'Profile', path: '/admin/profile' },
         { icon: <FiCheckSquare />, text: 'Bookings', path: '/admin/bookings' },
          { icon: <FiDollarSign />, text: 'Payments', path: '/admin/payments' },
+         { icon: <FiCreditCard />, text: 'Wallet', path: '/admin/wallet' },
         { icon: <FiGrid />, text: 'Categories', path: '/admin/categories' },
         { icon: <FiUsers />, text: 'Users', path: '/admin/users' },
         { icon: <FiUserCheck />, text: 'University Admins', path: '/admin/university-admins' },
@@ -34,7 +35,7 @@ const Sidebar = ({ isSidebarOpen, onSidebarClose }) => {
         { icon: <FiSettings />, text: 'Setting', path: '/admin/setting' },
     ];
     const navLinks = allNavLinks.filter(link => {
-        const subAdminOnlyLinks = ['Events', 'Comments', 'Bookings', 'Payments', 'Categories'];
+        const subAdminOnlyLinks = ['Events', 'Comments', 'Bookings', 'Payments', 'Categories', 'Wallet'];
 
         if (role === 'Admin') {
             return !subAdminOnlyLinks.includes(link.text);
@@ -71,7 +72,9 @@ const Sidebar = ({ isSidebarOpen, onSidebarClose }) => {
                 {/* --- HEADER OF THE SIDEBAR --- */}
                 <div className="h-20 flex items-center justify-between px-4  flex-shrink-0">
                     {/* <Logo/> */}
-                    <img src={siteSetting.siteLogo} alt="Site Logo" className="h-28 w-48 object-contain" />
+                    {siteSetting?.siteLogo ? (
+                        <img src={siteSetting.siteLogo} alt="Site Logo" className="h-28 w-48 object-contain" />
+                    ) : null}
                     {/* --- THE NEW CLOSE BUTTON --- */}
                     {/* It's only visible on small screens (lg:hidden) */}
                     <button onClick={onSidebarClose} className="lg:hidden text-gray-500 hover:text-gray-800">

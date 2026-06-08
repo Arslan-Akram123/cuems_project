@@ -62,6 +62,9 @@ export const generateInvoice = (booking) => {
     doc.setFontSize(9);
     doc.setTextColor(...mediumText);
     doc.text(booking.user.email, 14, billingStartY + 25);
+    doc.text(`CNIC: ${booking.cnicNumber || '---'}`, 14, billingStartY + 30);
+    doc.text(`Prev. Degree: ${booking.previousDegreeName || '---'}`, 14, billingStartY + 35);
+    doc.text(`Institute: ${booking.currentInstituteName || '---'}`, 14, billingStartY + 40);
     
     // Invoice details
     // const invoiceDetails = [
@@ -128,7 +131,7 @@ if (booking.event.endTime) {
             ]
         ],
         body: tableData,
-        startY: billingStartY + 50,
+        startY: billingStartY + 60,
         margin: { left: 14, right: 14 },
         styles: {
             fontSize: 9,
@@ -160,16 +163,29 @@ if (booking.event.endTime) {
 
    
 
-    // --- 5. Footer ---
-    const footerY = pageHeight - 30;
+    // --- 4. Instructions Section ---
+    const finalY = doc.lastAutoTable.finalY || (billingStartY + 100);
+    const instructionsY = finalY + 15;
+
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(...darkText);
+    doc.text("INSTRUCTIONS", 14, instructionsY);
+
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(...mediumText);
     
-    // Payment instructions
-    doc.setFontSize(8);
-    doc.setTextColor(...lightText);
-    doc.text("IMPORTANT INFORMATION", 14, footerY);
-    doc.setFontSize(7);
-    doc.text("Please take a print of this invoice and present it at the time of the event.", 14, footerY + 5);
-    doc.text("please make sure to bring your ID with you.", 14, footerY + 10);
+    const instructions = [
+        "Please take a print of this invoice and present it at the time of the event.",
+        "Please make sure to bring your ID with you."
+    ];
+
+    instructions.forEach((instruction, index) => {
+        doc.text(`• ${instruction}`, 14, instructionsY + 8 + (index * 6));
+    });
+
+    // --- 5. Footer ---
     
     // Thank you message
     doc.setFontSize(8);
@@ -177,13 +193,13 @@ if (booking.event.endTime) {
     doc.text(
         "Thank you for your booking!",
         pageWidth / 2,
-        pageHeight - 10,
+        pageHeight - 15,
         { align: 'center' }
     );
     
     // Page number
     doc.setTextColor(...lightText);
-    doc.text(`Page 1 of 1`, pageWidth - 14, pageHeight - 10, { align: 'right' });
+    doc.text(`Page 1 of 1`, pageWidth - 14, pageHeight - 15, { align: 'right' });
 
     // --- Save PDF ---
     doc.save(`Invoice_${booking._id.slice(-8).toUpperCase()}.pdf`);

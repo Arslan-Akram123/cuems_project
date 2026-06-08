@@ -46,7 +46,11 @@ const AdminUniversitiesPage = () => {
                                 <tr key={uni._id}>
                                     <td className="py-4 px-4">{index + 1}</td>
                                     <td className="py-4 px-4 font-semibold">{uni.name}</td>
-                                    <td className="py-4 px-4 max-w-sm truncate">{uni.description}</td>
+                                    <td className="py-4 px-4">
+                                        <div className="max-w-sm overflow-x-auto whitespace-nowrap scrollbar-hide" title={uni.description}>
+                                            {uni.description}
+                                        </div>
+                                    </td>
                                     <td className="py-4 px-4 font-mono">{uni.shortName}</td>
                                     <td className="py-4 px-4">
                                         <img src={uni.logo} alt={uni.name} className="h-12 w-12 object-contain rounded-md" />
